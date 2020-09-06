@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using MelonLoader;
 using Harmony;
+using System.Linq;
+using UnhollowerRuntimeLib.XrefScans;
 
 namespace PhotoOrganization
 {
@@ -39,9 +41,9 @@ namespace PhotoOrganization
                     }
                 }
             }
-
+            var TargetMethod = typeof(ObjectPublicCaUnique).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(it => it.GetParameters().Length == 2 && XrefScanner.XrefScan(it).Any(jt => jt.Type == XrefType.Global && jt.ReadAsObject()?.ToString() == "{0}/VRChat/VRChat_{1}x{2}_{3}.png"));
             HarmonyInstance harmonyInstance = HarmonyInstance.Create("PhotoOrganization");
-            harmonyInstance.Patch(typeof(ObjectPublicCaUnique).GetMethod("Method_Private_Static_String_Int32_Int32_0", BindingFlags.Public | BindingFlags.Static), new HarmonyMethod(typeof(PhotoOrganization).GetMethod("CameraFolderOrganize", BindingFlags.Static | BindingFlags.NonPublic)));
+            harmonyInstance.Patch(TargetMethod, new HarmonyMethod(typeof(PhotoOrganization).GetMethod("CameraFolderOrganize", BindingFlags.Static | BindingFlags.NonPublic)));
         }
 
         private static bool CameraFolderOrganize(ref string __result) { __result = string.Format("{0}/{1}/{2}.png", new object[] { FolderPath, DateTime.Now.ToString("yyyy-MM-dd"), DateTime.Now.ToString("HH-mm-ss.fff") }); return false; }
